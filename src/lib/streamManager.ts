@@ -121,6 +121,11 @@ function _spawnFFmpeg(platform: Platform) {
   if (process.env.ENABLE_WATERMARK === 'true') {
     filterChain += `,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5`;
   }
+
+  // ANTI-BANNED PIXEL RANDOMIZATION (Temporal Noise)
+  // Menambahkan noise mikroskopis yang berubah setiap frame.
+  // Ini membuat algoritma Hashing YouTube/TikTok mustahil mendeteksi video looping.
+  filterChain += `,noise=c0s=2:allf=t`;
   
   if (hasLogo) {
     // If logo is the 2nd or 3rd input depending on hasAudio
