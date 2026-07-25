@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState('');
+  const [marqueeText, setMarqueeText] = useState('');
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
