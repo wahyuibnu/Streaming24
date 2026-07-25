@@ -22,12 +22,23 @@ export default function Dashboard() {
     fetchSystem();
     fetchMedia();
     fetchConfig();
+    fetchMarquee();
     const interval = setInterval(() => {
       fetchStatus();
       fetchSystem();
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchMarquee = async () => {
+    try {
+      const res = await fetch('/api/marquee');
+      if (res.ok) {
+        const data = await res.json();
+        setMarqueeText(data.text);
+      }
+    } catch(e) {}
+  };
 
   const fetchConfig = async () => {
     try {
@@ -369,8 +380,12 @@ export default function Dashboard() {
       </main>
 
       <section className={`glass-panel fade-in`} style={{ marginTop: '30px', animationDelay: '0.4s' }}>
-        <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--glass-border)', fontSize: '1.1rem', fontWeight: 600 }}>
-          Terminal Logs (Real-time)
+        <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>Terminal Logs (Real-time)</div>
+          <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem' }} onClick={() => setLogs([])}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Clear Logs
+          </button>
         </div>
         <div 
           ref={logsEndRef}
