@@ -132,8 +132,19 @@ export default function Dashboard() {
             <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{system.memory.used} GB / {system.memory.total} GB ({system.memory.percent}%)</div>
           </div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>CPU</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 500 }}>{system.cpu}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Network Diagnostic</div>
+            <button className="btn" style={{ padding: '6px 12px', fontSize: '0.85rem', marginTop: '4px', background: 'var(--primary)' }} onClick={async () => {
+              setMessage('Testing network latency to ingest servers...');
+              try {
+                const res = await fetch('/api/network');
+                const data = await res.json();
+                setMessage(`Network Latency to YouTube RTMP: ${data.ping}`);
+              } catch(e) {
+                setMessage('Network test failed');
+              }
+            }}>
+              Run Speedtest
+            </button>
           </div>
         </section>
       )}
@@ -147,7 +158,7 @@ export default function Dashboard() {
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Broadcasting via RTMP with live clock watermark overlay.
+            Broadcasting via RTMP. Reads advanced settings from .env and loops playlist.
           </p>
           <div className={styles.actions}>
             {ytStatus === 'offline' ? (

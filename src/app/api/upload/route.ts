@@ -19,16 +19,18 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Save to public/stream_video.mp4
-    const publicDir = path.join(process.cwd(), 'public');
+    // Save to public/videos
+    const publicDir = path.join(process.cwd(), 'public', 'videos');
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
     
-    const filePath = path.join(publicDir, 'stream_video.mp4');
+    // Prefix with timestamp so it orders correctly in playlist
+    const fileName = `${Date.now()}_${file.name.replace(/\\s+/g, '_')}`;
+    const filePath = path.join(publicDir, fileName);
     await writeFile(filePath, buffer);
 
-    return NextResponse.json({ success: true, message: 'Video uploaded and replaced successfully.' });
+    return NextResponse.json({ success: true, message: 'Video uploaded and added to playlist.' });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
