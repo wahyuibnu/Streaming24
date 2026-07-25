@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StreamAuto 24/7",
-  description: "Automated 24/7 Live Streaming Dashboard for YouTube and TikTok",
+  title: "HANTHU STREAM24",
+  description: "24/7 Multi-Platform Broadcasting",
 };
 
 export default function RootLayout({

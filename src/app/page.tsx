@@ -184,7 +184,7 @@ export default function Dashboard() {
     <div className={styles.container}>
       <header className={`${styles.header} fade-in`}>
         <div className={styles.logo} style={{ display: 'flex', alignItems: 'center' }}>
-          StreamAuto 24/7
+          HANTHU STREAM24
           <span style={{ fontSize: '0.65rem', background: '#ff9800', color: '#000', padding: '3px 6px', borderRadius: '4px', marginLeft: '10px', fontWeight: 700, letterSpacing: '1px' }}>BETA</span>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>

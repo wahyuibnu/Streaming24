@@ -36,10 +36,10 @@ export default function Login() {
 
   return (
     <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      <div className={`glass-panel ${styles.card} fade-in`} style={{ maxWidth: '400px', width: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <h1 className={styles.logo} style={{ fontSize: '1.8rem', justifyContent: 'center' }}>StreamAuto 24/7</h1>
-          <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Secure Access Panel</p>
+      <div className={`glass-panel ${styles.card} fade-in`} style={{ maxWidth: '400px', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px', padding: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          <h1 className={styles.logo} style={{ fontSize: '1.8rem', justifyContent: 'center' }}>HANTHU STREAM24</h1>
+          <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Admin Authentication</p>
         </div>
 
         {error && (

@@ -1,4 +1,4 @@
-# StreamAuto 24/7
+# HANTHU STREAM24
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Status](https://img.shields.io/badge/Status-Beta-orange.svg)
@@ -6,7 +6,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-14.x-black.svg)
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-4.4%2B-red.svg)
 
-StreamAuto 24/7 is a professional, self-hosted live streaming automation platform. Built with Next.js and powered by FFmpeg, it allows you to broadcast pre-recorded videos and audio continuously to multiple platforms (YouTube, TikTok, Twitch, and Kick) simultaneously without relying on third-party SaaS subscriptions.
+HANTHU STREAM24 is a professional, self-hosted live streaming automation platform. Built with Next.js and powered by FFmpeg, it allows you to broadcast pre-recorded videos and audio continuously to multiple platforms (YouTube, TikTok, Twitch, and Kick) simultaneously without relying on third-party SaaS subscriptions.
 
 ## Key Features
 

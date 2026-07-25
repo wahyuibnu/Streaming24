@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'StreamAuto247',
+      name: 'HanthuStream24',
       script: 'npm',
       args: 'start',
       instances: 1, // Only 1 instance to avoid port collisions and multiple FFmpeg spawns

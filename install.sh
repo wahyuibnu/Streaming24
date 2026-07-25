@@ -2,7 +2,7 @@
 set -e
 
 echo "=================================================="
-echo "🚀 StreamAuto 24/7 - Auto Installer"
+echo "🚀 HANTHU STREAM24 - Auto Installer"
 echo "=================================================="
 
 # Check if Docker is installed

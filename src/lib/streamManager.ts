@@ -48,7 +48,7 @@ async function sendWebhook(message: string) {
     await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: `🚨 **StreamAuto 24/7 Alert**\n${message}` })
+      body: JSON.stringify({ content: `🚨 **HANTHU STREAM24 Alert**\n${message}` })
     });
   } catch (e) {
     addLog('[System] Gagal mengirim peringatan webhook');
