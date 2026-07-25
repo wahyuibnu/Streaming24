@@ -8,6 +8,8 @@ export default function Dashboard() {
   const [system, setSystem] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [media, setMedia] = useState<{videos: string[], audio: string[], logo: boolean}>({ videos: [], audio: [], logo: false });
+  const [config, setConfig] = useState<Record<string, string>>({});
+  const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,12 +21,20 @@ export default function Dashboard() {
     fetchStatus();
     fetchSystem();
     fetchMedia();
+    fetchConfig();
     const interval = setInterval(() => {
       fetchStatus();
       fetchSystem();
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch('/api/config');
+      if (res.ok) setConfig(await res.json());
+    } catch(e) {}
+  };
 
   const fetchMedia = async () => {
     try {
@@ -144,7 +154,22 @@ export default function Dashboard() {
     } catch(e) {}
   };
 
-  return (
+  const handleSaveConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage('Menyimpan pengaturan...');
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      });
+      const data = await res.json();
+      setMessage(data.message || 'Settings saved!');
+      setShowSettings(false);
+    } catch (e: any) {
+      setMessage(`Error: ${e.message}`);
+    }
+  }  return (
     <div className={styles.container}>
       <header className={`${styles.header} fade-in`}>
         <div className={styles.logo}>StreamAuto 24/7</div>
@@ -153,8 +178,11 @@ export default function Dashboard() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             STOP ALL
           </button>
+          <button className="btn" onClick={() => setShowSettings(true)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            ⚙️ Settings
+          </button>
           <button className="btn" onClick={() => window.location.href = '/api/backup'} style={{ background: 'var(--primary)', border: '1px solid var(--primary)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Export Backup
           </button>
           <button className="btn" onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)' }}>
@@ -163,6 +191,44 @@ export default function Dashboard() {
           </button>
         </div>
       </header>
+
+      {showSettings && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass-panel" style={{ padding: '30px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '20px' }}>⚙️ System Settings (.env)</h2>
+            <form onSubmit={handleSaveConfig} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>YouTube Stream Key</label>
+                <input type="password" value={config.YOUTUBE_STREAM_KEY || ''} onChange={(e) => setConfig({...config, YOUTUBE_STREAM_KEY: e.target.value})} className="input-field" />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>TikTok Stream Key</label>
+                <input type="password" value={config.TIKTOK_STREAM_KEY || ''} onChange={(e) => setConfig({...config, TIKTOK_STREAM_KEY: e.target.value})} className="input-field" />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>Video Bitrate (e.g. 3000k)</label>
+                <input type="text" value={config.STREAM_BITRATE || ''} onChange={(e) => setConfig({...config, STREAM_BITRATE: e.target.value})} className="input-field" />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>Hardware Encoder</label>
+                <select value={config.HARDWARE_ENCODER || 'libx264'} onChange={(e) => setConfig({...config, HARDWARE_ENCODER: e.target.value})} className="input-field" style={{ background: '#111' }}>
+                  <option value="libx264">CPU (libx264)</option>
+                  <option value="h264_nvenc">NVIDIA GPU (h264_nvenc)</option>
+                  <option value="h264_qsv">Intel QuickSync (h264_qsv)</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>Discord Webhook URL</label>
+                <input type="url" value={config.DISCORD_WEBHOOK_URL || ''} onChange={(e) => setConfig({...config, DISCORD_WEBHOOK_URL: e.target.value})} className="input-field" />
+              </div>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button type="submit" className="btn btn-success" style={{ flex: 1 }}>Save Changes</button>
+                <button type="button" className="btn" onClick={() => setShowSettings(false)} style={{ background: '#333' }}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {message && (
         <div style={{ padding: '12px 16px', background: 'var(--glass-bg)', borderLeft: '4px solid var(--primary)', marginBottom: '24px', borderRadius: '6px', fontSize: '0.95rem' }}>
