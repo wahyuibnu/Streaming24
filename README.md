@@ -26,20 +26,27 @@ Bosan komputer Anda harus menyala seharian penuh hanya untuk menjaga siaran *liv
 - **🚀 Eksekusi GPU (Hardware Acceleration)**: Jika server Anda dilengkapi GPU, sistem bisa diatur untuk menggunakan NVENC (Nvidia) atau QSV (Intel) agar performa CPU tetap sangat rendah (0-5%).
 - **🖼️ Dynamic Image Logo Watermark**: Tingkatkan *branding* saluran Anda! Unggah logo transparan (.png) langsung dari *Dashboard*, dan sistem akan otomatis menempelkannya di pojok kiri atas siaran layaknya stasiun televisi sungguhan.
 - **🤖 Remote API Trigger (Webhook)**: Kontrol penuh dari luar! Anda kini bisa menyalakan atau mematikan siaran dari jarak jauh menggunakan API rahasia yang terhubung langsung dengan aplikasi otomatisasi seperti Zapier, IFTTT, atau Siri Shortcuts.
+- **📦 One-Click Server Export**: Pindah server? Tidak perlu repot memindahkan file secara manual. Klik tombol "Export Backup" di Dashboard, dan seluruh video, audio, teks, serta file .env Anda akan terunduh menjadi satu file `.tar.gz` yang siap dipasang di tempat baru.
 - **🛡️ Fail-Safe Fallback Screen**: Jika terjadi kesalahan (misalnya video terhapus atau kosong), sistem secara otomatis memutar video "Please Stand By" darurat agar koneksi Anda ke YouTube/TikTok tidak pernah terputus.
 
 ## 📦 Persyaratan Sistem
 
-- **Node.js** (versi 18 ke atas)
-- **FFmpeg** (Wajib terinstal di OS Anda: `sudo apt install ffmpeg`)
-- **Fonts Dejavu** (Untuk teks berjalan: `sudo apt install fonts-dejavu-core`)
-- Disarankan menggunakan sistem berbasis Linux (Ubuntu/Debian) untuk performa 24/7 terbaik.
+- Server berbasis Linux (Ubuntu/Debian) untuk performa 24/7 terbaik.
+- Jika menginstal manual: **Node.js** 18+ & **FFmpeg**.
 
 ## 🚀 Instalasi & Cara Penggunaan
 
-### 🐳 Metode 1: Menggunakan Docker (Sangat Disarankan)
+### ⚡ Metode 1: One-Click Auto Installer (Paling Cepat & Mudah)
 
-Metode ini adalah yang termudah. Anda tidak perlu repot menginstal Node.js atau FFmpeg secara manual.
+Buka terminal di server Linux (VPS) Anda yang masih kosong (fresh install), lalu *copy-paste* perintah pamungkas ini:
+
+```bash
+curl -sL https://raw.githubusercontent.com/wahyuibnu/Streaming24/main/install.sh | bash
+```
+
+*Script* ini akan mengambil alih semuanya: menginstal Docker, mengunduh repositori, membuat file `.env`, dan langsung menjalankan *server* secara otomatis. Setelah selesai, ia akan memberi tahu IP Dashboard Anda!
+
+### 🐳 Metode 2: Menggunakan Docker Manual
 
 1. **Unduh Repositori & Persiapkan Environment**
    ```bash
