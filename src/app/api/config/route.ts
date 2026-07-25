@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     let newContent = '';
     for (const [key, value] of Object.entries(newConfig)) {
       newContent += `${key}=${value}\n`;
+      process.env[key] = value as string;
     }
     
     fs.writeFileSync(envPath, newContent);
