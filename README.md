@@ -29,6 +29,7 @@ Bosan komputer Anda harus menyala seharian penuh hanya untuk menjaga siaran *liv
 - **📦 One-Click Server Export**: Pindah server? Tidak perlu repot memindahkan file secara manual. Klik tombol "Export Backup" di Dashboard, dan seluruh video, audio, teks, serta file .env Anda akan terunduh menjadi satu file `.tar.gz` yang siap dipasang di tempat baru.
 - **🛡️ Fail-Safe Fallback Screen**: Jika terjadi kesalahan (misalnya video terhapus atau kosong), sistem secara otomatis memutar video "Please Stand By" darurat agar koneksi Anda ke YouTube/TikTok tidak pernah terputus.
 - **👻 Anti-Banned Pixel Randomization**: *Fitur Dewa Rahasia*. Sistem menyuntikkan *noise/grain* mikroskopis (*Temporal Noise*) yang berubah di setiap *frame*. Ini menghancurkan algoritma pelacak *Video Hashing* milik AI YouTube dan TikTok, membuat mereka mengira video *looping* Anda adalah siaran kamera *Live* yang 100% organik. Anti *shadowban*, anti *spam-strike*.
+- **🎵 Real-Time Audio Spectrum Visualizer**: Punya saluran Musik / Lofi 24/7? Aktifkan fitur ini di *Settings*, dan FFmpeg akan secara gaib merender grafik gelombang frekuensi suara (*Audio EQ Bars*) secara *real-time* dan menempelkannya di atas video Anda. Menjadikan *streaming* statis Anda terasa sangat interaktif dan premium layaknya saluran musik profesional!
 
 ## 📦 Persyaratan Sistem
 

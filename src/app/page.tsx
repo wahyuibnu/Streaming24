@@ -229,6 +229,13 @@ export default function Dashboard() {
                 </select>
               </div>
               <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>Lofi Audio Visualizer</label>
+                <select value={config.ENABLE_VISUALIZER || 'false'} onChange={(e) => setConfig({...config, ENABLE_VISUALIZER: e.target.value})} className="input-field" style={{ background: '#111' }}>
+                  <option value="false">Off (Disabled)</option>
+                  <option value="true">On (Cyan Spectrum Overlay)</option>
+                </select>
+              </div>
+              <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>Discord Webhook URL</label>
                 <input type="url" value={config.DISCORD_WEBHOOK_URL || ''} onChange={(e) => setConfig({...config, DISCORD_WEBHOOK_URL: e.target.value})} className="input-field" />
               </div>

@@ -115,27 +115,42 @@ function _spawnFFmpeg(platform: Platform) {
   if (hasAudio) ffmpegArgs.push('-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', audioPlaylistPath);
   if (hasLogo) ffmpegArgs.push('-i', 'logo.png');
 
-  const marqueePath = path.join(process.cwd(), 'public', 'marquee.txt');
-  let filterChain = `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile='${marqueePath}':reload=1:y=h-line_h-15:x=w-mod(t*150\\,w+tw):fontsize=28:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=10`;
-  
-  if (process.env.ENABLE_WATERMARK === 'true') {
-    filterChain += `,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5`;
+  let filterChain = '';
+  let currentVideo = '[0:v]';
+  const audioInput = hasAudio ? '[1:a]' : '[0:a]';
+  let hasComplex = false;
+
+  // 1. Audio Visualizer (if enabled)
+  if (process.env.ENABLE_VISUALIZER === 'true') {
+    filterChain += `${audioInput}showwaves=s=1280x150:colors=cyan:mode=cline,format=yuva420p[wave];`;
+    filterChain += `${currentVideo}[wave]overlay=0:H-h[vwithwave];`;
+    currentVideo = '[vwithwave]';
+    hasComplex = true;
   }
 
-  // ANTI-BANNED PIXEL RANDOMIZATION (Temporal Noise)
-  // Menambahkan noise mikroskopis yang berubah setiap frame.
-  // Ini membuat algoritma Hashing YouTube/TikTok mustahil mendeteksi video looping.
-  filterChain += `,noise=c0s=2:allf=t`;
-  
+  // 2. Logo Overlay
   if (hasLogo) {
-    // If logo is the 2nd or 3rd input depending on hasAudio
     const logoIndex = hasAudio ? 2 : 1;
-    // Map video to [v], overlay logo to [vout], then apply drawtext
-    filterChain = `[0:v][${logoIndex}:v]overlay=20:20[vout];[vout]${filterChain}`;
+    filterChain += `${currentVideo}[${logoIndex}:v]overlay=20:20[vwithlogo];`;
+    currentVideo = '[vwithlogo]';
+    hasComplex = true;
+  }
+
+  // 3. Text & Noise Filters
+  const marqueePath = path.join(process.cwd(), 'public', 'marquee.txt');
+  let vfFilters = `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile='${marqueePath}':reload=1:y=h-line_h-15:x=w-mod(t*150\\,w+tw):fontsize=28:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=10`;
+  if (process.env.ENABLE_WATERMARK === 'true') {
+    vfFilters += `,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5`;
+  }
+  // Anti-Banned Pixel Randomization
+  vfFilters += `,noise=c0s=2:allf=t`;
+
+  if (hasComplex) {
+    filterChain += `${currentVideo}${vfFilters}[vout]`;
     ffmpegArgs.push('-filter_complex', filterChain);
-    ffmpegArgs.push('-map', '[vout]'); // output video map
+    ffmpegArgs.push('-map', '[vout]');
   } else {
-    ffmpegArgs.push('-vf', filterChain);
+    ffmpegArgs.push('-vf', vfFilters);
     ffmpegArgs.push('-map', '0:v:0');
   }
 
