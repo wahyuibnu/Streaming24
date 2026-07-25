@@ -180,7 +180,9 @@ export default function Dashboard() {
     } catch (e: any) {
       setMessage(`Error: ${e.message}`);
     }
-  }  return (
+  }
+
+  return (
     <div className={styles.container}>
       <header className={`${styles.header} fade-in`}>
         <div className={styles.logo} style={{ display: 'flex', alignItems: 'center' }}>
