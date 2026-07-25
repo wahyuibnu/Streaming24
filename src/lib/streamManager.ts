@@ -12,6 +12,24 @@ const globalStore = global as unknown as {
 
 if (!globalStore.logs) globalStore.logs = [];
 
+// Zombie Process Prevention: Kill FFmpeg if Node.js server shuts down or restarts
+if (!globalStore.schedulerInitialzed) {
+  const cleanup = () => {
+    if (globalStore.youtubeProcess && !globalStore.youtubeProcess.killed) {
+      globalStore.youtubeProcess.kill('SIGKILL');
+    }
+    if (globalStore.tiktokProcess && !globalStore.tiktokProcess.killed) {
+      globalStore.tiktokProcess.kill('SIGKILL');
+    }
+  };
+  
+  process.on('exit', cleanup);
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('SIGUSR1', cleanup);
+  process.on('SIGUSR2', cleanup);
+}
+
 function addLog(msg: string) {
   const time = new Date().toISOString().split('T')[1].split('.')[0];
   globalStore.logs.unshift(`[${time}] ${msg}`);
