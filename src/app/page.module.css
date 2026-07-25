@@ -1,78 +1,90 @@
 .container {
-  max-width: 1200px;
+  max-width: 1024px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 60px 24px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--primary);
 }
 
 .dashboardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
 }
 
 .card {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6);
+  gap: 16px;
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
 }
 
 .cardTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #e4e4e7;
+  color: var(--foreground);
 }
 
 .statusBadge {
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusBadge::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
 }
 
 .statusOffline {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--accent);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.statusOffline::before {
+  background: #52525b;
 }
 
 .statusOnline {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(16, 185, 129, 0.05);
   color: var(--success);
   border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.statusOnline::before {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
 }
 
 .formGroup {
@@ -82,16 +94,16 @@
 }
 
 .formGroup label {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 .actions {
   margin-top: auto;
   display: flex;
-  gap: 12px;
-  padding-top: 15px;
+  gap: 8px;
+  padding-top: 8px;
 }
 
 .actions button {
@@ -99,31 +111,30 @@
 }
 
 .uploadArea {
-  border: 1px dashed rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 30px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 40px 20px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: rgba(255,255,255,0.01);
+  transition: all 0.15s ease;
+  background: var(--accent);
 }
 
 .uploadArea:hover {
-  border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.05);
+  border-color: #52525b;
+  background: var(--accent-hover);
 }
 
 .uploadIcon {
-  font-size: 2.5rem;
   margin-bottom: 12px;
-  color: var(--primary);
+  color: var(--muted);
   opacity: 0.8;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .header {
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     align-items: flex-start;
   }
   .dashboardGrid {
