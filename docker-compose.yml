@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  streamauto:
+    build: .
+    container_name: streamauto_247
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./public:/app/public
+      - .env:/app/.env
+    environment:
+      - NODE_ENV=production

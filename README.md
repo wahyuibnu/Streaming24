@@ -37,43 +37,49 @@ Bosan komputer Anda harus menyala seharian penuh hanya untuk menjaga siaran *liv
 
 ## 🚀 Instalasi & Cara Penggunaan
 
-1. **Unduh Repositori**
+### 🐳 Metode 1: Menggunakan Docker (Sangat Disarankan)
+
+Metode ini adalah yang termudah. Anda tidak perlu repot menginstal Node.js atau FFmpeg secara manual.
+
+1. **Unduh Repositori & Persiapkan Environment**
    ```bash
    git clone https://github.com/wahyuibnu/Streaming24.git
    cd Streaming24
-   ```
-
-2. **Instal Dependensi**
-   ```bash
-   npm install
-   ```
-
-3. **Konfigurasi Environment**
-   Ganti nama `.env.example` menjadi `.env` lalu sesuaikan dengan kunci rahasia Anda.
-   ```bash
    cp .env.example .env
    ```
-   > 💡 **Penting:** Pastikan Anda mengubah `ADMIN_PASSWORD` di dalam `.env` untuk melindungi *dashboard* Anda dari jangkauan publik.
+   > 💡 Edit file `.env` dan masukkan password serta Stream Key Anda.
 
-4. **Unggah Media Anda**
-   - Video utama bisa diunggah langsung melalui *Dashboard* Web nanti.
-   - Atau, masukkan file video berformat `.mp4` ke dalam folder `public/videos/`.
-   - (Opsional) Masukkan file `.mp3` ke folder `public/audio/` untuk mengaktifkan mode *Radio Lofi*.
-
-5. **Jalankan Aplikasi**
-   Untuk tahap uji coba:
+2. **Jalankan dengan Satu Perintah**
    ```bash
-   npm run dev
+   docker-compose up -d
    ```
-   Untuk disebarkan di *Production* (Disarankan menggunakan PM2):
+   Aplikasi Anda kini sudah menyala dan kebal dari *error* sistem operasi! Buka `http://<IP-Server>:8080`.
+
+### 🖥️ Metode 2: Instalasi Manual (Native Linux)
+
+Gunakan metode ini jika Anda tidak menggunakan Docker.
+
+1. **Instal Dependensi Sistem**
+   ```bash
+   sudo apt update
+   sudo apt install ffmpeg fonts-dejavu-core -y
+   ```
+
+2. **Unduh & Instal Aplikasi**
+   ```bash
+   git clone https://github.com/wahyuibnu/Streaming24.git
+   cd Streaming24
+   npm install
+   cp .env.example .env
+   ```
+
+3. **Jalankan Aplikasi (Production)**
    ```bash
    sudo npm install -g pm2
    npm run build
    pm2 start ecosystem.config.js
    pm2 save
    ```
-
-6. Buka `http://<IP-Server-Anda>:8080` di browser dan masuk menggunakan *password* yang telah Anda buat.
 
 ## 🛠️ Modifikasi Tingkat Lanjut (Advanced Config)
 

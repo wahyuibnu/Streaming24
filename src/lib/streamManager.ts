@@ -150,7 +150,8 @@ function _spawnFFmpeg(platform: Platform) {
     '-g', '50',
     '-c:a', 'aac',
     '-b:a', '128k',
-    '-ar', '44100'
+    '-ar', '44100',
+    '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11' // Audio Mastering
   ]);
 
   if (enableArchive) {
