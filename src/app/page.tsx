@@ -212,12 +212,12 @@ export default function Dashboard() {
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>Media Source</div>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Upload a new MP4 file directly from your browser.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '15px' }}>
+            Upload <strong>.mp4</strong> videos to add to the playlist, or upload a <strong>.png</strong> file to set your Brand Logo Watermark!
           </p>
           <input 
             type="file" 
-            accept="video/mp4" 
+            accept=".mp4, .png" 
             style={{ display: 'none' }} 
             ref={fileInputRef}
             onChange={handleFileUpload}

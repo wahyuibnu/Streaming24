@@ -55,8 +55,19 @@ function buildPlaylists() {
   if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
   if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
   
-  const videoFiles = fs.readdirSync(videosDir).filter(f => f.endsWith('.mp4')).sort();
-  if (videoFiles.length === 0) throw new Error('Silakan unggah minimal 1 file MP4 terlebih dahulu.');
+  let videoFiles = fs.readdirSync(videosDir).filter(f => f.endsWith('.mp4')).sort();
+  
+  // FAIL-SAFE FALLBACK SYSTEM
+  let isUsingFallback = false;
+  if (videoFiles.length === 0) {
+    if (fs.existsSync(path.join(publicDir, 'fallback.mp4'))) {
+      videoFiles = ['../fallback.mp4']; // Relative to public/videos/ for concat
+      isUsingFallback = true;
+      addLog('[Sistem] Peringatan: Memutar video cadangan (Fail-Safe) karena playlist kosong.');
+    } else {
+      throw new Error('Silakan unggah minimal 1 file MP4 terlebih dahulu.');
+    }
+  }
   
   const audioFiles = fs.readdirSync(audioDir).filter(f => f.endsWith('.mp3')).sort(() => Math.random() - 0.5);
   
@@ -65,12 +76,14 @@ function buildPlaylists() {
   
   fs.writeFileSync(videoPlaylistPath, videoFiles.map(f => `file 'videos/${f}'`).join('\n'));
   
-  const hasAudio = audioFiles.length > 0;
+  const hasAudio = audioFiles.length > 0 && !isUsingFallback;
   if (hasAudio) {
     fs.writeFileSync(audioPlaylistPath, audioFiles.map(f => `file 'audio/${f}'`).join('\n'));
   }
   
-  return { videoPlaylistPath, audioPlaylistPath, hasAudio };
+  const hasLogo = fs.existsSync(path.join(publicDir, 'logo.png'));
+  
+  return { videoPlaylistPath, audioPlaylistPath, hasAudio, hasLogo, isUsingFallback };
 }
 
 export function startStream(platform: Platform) {
@@ -91,7 +104,7 @@ function _spawnFFmpeg(platform: Platform) {
     throw new Error(`Kredensial RTMP/Key untuk ${platform} belum diatur di .env`);
   }
 
-  const { videoPlaylistPath, audioPlaylistPath, hasAudio } = buildPlaylists();
+  const { videoPlaylistPath, audioPlaylistPath, hasAudio, hasLogo } = buildPlaylists();
   const bitrate = process.env.STREAM_BITRATE || '3000k';
   const preset = process.env.STREAM_PRESET || 'veryfast';
   const resolution = process.env.STREAM_RESOLUTION || '1280x720';
@@ -100,6 +113,7 @@ function _spawnFFmpeg(platform: Platform) {
 
   let ffmpegArgs = ['-re', '-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', videoPlaylistPath];
   if (hasAudio) ffmpegArgs.push('-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', audioPlaylistPath);
+  if (hasLogo) ffmpegArgs.push('-i', 'logo.png');
 
   const marqueePath = path.join(process.cwd(), 'public', 'marquee.txt');
   let filterChain = `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile='${marqueePath}':reload=1:y=h-line_h-15:x=w-mod(t*150\\,w+tw):fontsize=28:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=10`;
@@ -108,8 +122,20 @@ function _spawnFFmpeg(platform: Platform) {
     filterChain += `,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5`;
   }
   
-  ffmpegArgs.push('-vf', filterChain);
-  if (hasAudio) ffmpegArgs.push('-map', '0:v:0', '-map', '1:a:0');
+  if (hasLogo) {
+    // If logo is the 2nd or 3rd input depending on hasAudio
+    const logoIndex = hasAudio ? 2 : 1;
+    // Map video to [v], overlay logo to [vout], then apply drawtext
+    filterChain = `[0:v][${logoIndex}:v]overlay=20:20[vout];[vout]${filterChain}`;
+    ffmpegArgs.push('-filter_complex', filterChain);
+    ffmpegArgs.push('-map', '[vout]'); // output video map
+  } else {
+    ffmpegArgs.push('-vf', filterChain);
+    ffmpegArgs.push('-map', '0:v:0');
+  }
+
+  if (hasAudio) ffmpegArgs.push('-map', '1:a:0'); // map audio from 2nd input
+  else ffmpegArgs.push('-map', '0:a:0'); // map audio from 1st input
 
   // Multi-output setup using pseudo-muxer if Archive is enabled
   // We apply the encoding args before specifying outputs

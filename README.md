@@ -24,8 +24,9 @@ Bosan komputer Anda harus menyala seharian penuh hanya untuk menjaga siaran *liv
 - **💬 Live Marquee (Teks Berjalan)**: Ingin menyapa donatur atau memberi pengumuman *live*? Ubah teks berjalan (Running Text) langsung dari *dashboard* dan video Anda akan ter- *update* seketika tanpa perlu menghentikan siaran.
 - **🛡️ Sistem Keamanan Berlapis (Brute-Force Protection)**: Panel admin diamankan dengan autentikasi berbasis sesi (*cookie*) serta pelacakan *lockout* otomatis jika ada percobaan *login* paksa oleh *hacker*.
 - **🚀 Eksekusi GPU (Hardware Acceleration)**: Jika server Anda dilengkapi GPU, sistem bisa diatur untuk menggunakan NVENC (Nvidia) atau QSV (Intel) agar performa CPU tetap sangat rendah (0-5%).
-- **🔴 VOD Archiving Otomatis**: Rekam siaran Anda secara paralel (*Tee Muxing*) langsung ke dalam hardisk server tanpa membebani prosesor sama sekali.
-- **🤖 Penjaga Siaran (Anti-Zombie & Auto-Restart)**: Jika koneksi internet putus, sistem akan otomatis melakukan *restart* dalam 5 detik. Tidak hanya itu, aplikasi akan otomatis mematikan *Zombie Process* FFmpeg untuk mencegah memori server Anda bocor.
+- **🖼️ Dynamic Image Logo Watermark**: Tingkatkan *branding* saluran Anda! Unggah logo transparan (.png) langsung dari *Dashboard*, dan sistem akan otomatis menempelkannya di pojok kiri atas siaran layaknya stasiun televisi sungguhan.
+- **🤖 Remote API Trigger (Webhook)**: Kontrol penuh dari luar! Anda kini bisa menyalakan atau mematikan siaran dari jarak jauh menggunakan API rahasia yang terhubung langsung dengan aplikasi otomatisasi seperti Zapier, IFTTT, atau Siri Shortcuts.
+- **🛡️ Fail-Safe Fallback Screen**: Jika terjadi kesalahan (misalnya video terhapus atau kosong), sistem secara otomatis memutar video "Please Stand By" darurat agar koneksi Anda ke YouTube/TikTok tidak pernah terputus.
 
 ## 📦 Persyaratan Sistem
 

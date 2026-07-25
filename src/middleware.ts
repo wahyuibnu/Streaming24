@@ -9,11 +9,14 @@ export function middleware(request: NextRequest) {
     pathname === '/' || 
     (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth'))
   ) {
-    const session = request.cookies.get('stream_session');
-    
-    // Simple secure check - in a real app, use JWT. For this scope, a secure signed cookie or matched secret is enough.
-    // If there's no session, redirect to login
-    if (!session || session.value !== 'authenticated') {
+    const session = request.cookies.get('stream_session')?.value;
+    const apiKey = request.headers.get('x-api-key') || request.nextUrl.searchParams.get('api_key');
+    const validApiKey = process.env.API_KEY;
+
+    const isApiAuthorized = validApiKey && apiKey === validApiKey;
+    const isSessionAuthorized = session === 'authenticated';
+
+    if (!isSessionAuthorized && !isApiAuthorized) {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
