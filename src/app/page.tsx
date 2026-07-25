@@ -7,6 +7,7 @@ export default function Dashboard() {
   const [status, setStatus] = useState<Record<string, string>>({ youtube: 'offline', tiktok: 'offline', twitch: 'offline', kick: 'offline' });
   const [system, setSystem] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
+  const [media, setMedia] = useState<{videos: string[], audio: string[], logo: boolean}>({ videos: [], audio: [], logo: false });
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState('');
@@ -17,12 +18,20 @@ export default function Dashboard() {
   useEffect(() => {
     fetchStatus();
     fetchSystem();
+    fetchMedia();
     const interval = setInterval(() => {
       fetchStatus();
       fetchSystem();
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchMedia = async () => {
+    try {
+      const res = await fetch('/api/media');
+      if (res.ok) setMedia(await res.json());
+    } catch(e) {}
+  };
 
   useEffect(() => {
     if (logsEndRef.current) {
@@ -100,6 +109,7 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(data.error);
       
       setMessage(data.message);
+      fetchMedia();
     } catch (err: any) {
       setMessage(`Upload Error: ${err.message}`);
     } finally {
@@ -108,11 +118,41 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeleteMedia = async (type: string, filename: string) => {
+    if (!confirm(`Hapus ${filename}?`)) return;
+    try {
+      const res = await fetch('/api/media', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, filename })
+      });
+      if (res.ok) fetchMedia();
+    } catch(e) {}
+  };
+
+  const handlePanic = async () => {
+    if (!confirm('🛑 EMERGENCY: Hentikan SEMUA siaran secara paksa?')) return;
+    setMessage('Menjalankan prosedur darurat...');
+    try {
+      await fetch('/api/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'panic', platform: 'youtube' })
+      });
+      fetchStatus();
+      setMessage('Semua siaran dihentikan paksa.');
+    } catch(e) {}
+  };
+
   return (
     <div className={styles.container}>
       <header className={`${styles.header} fade-in`}>
         <div className={styles.logo}>StreamAuto 24/7</div>
         <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn btn-danger" onClick={handlePanic} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            STOP ALL
+          </button>
           <button className="btn" onClick={() => window.location.href = '/api/backup'} style={{ background: 'var(--primary)', border: '1px solid var(--primary)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Export Backup
@@ -227,30 +267,37 @@ export default function Dashboard() {
             style={{ display: 'none' }} 
             ref={fileInputRef}
             onChange={handleFileUpload}
+            id="file-upload"
           />
-          <div className={styles.uploadArea} onClick={() => !isUploading && fileInputRef.current?.click()} style={{ marginBottom: '15px' }}>
-            <div style={{ marginBottom: '15px' }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-            </div>
-            <h4 style={{ marginBottom: '6px', fontWeight: 500 }}>
-              {isUploading ? 'Uploading...' : 'Click to Upload MP4'}
-            </h4>
-          </div>
+          <button className="btn btn-success" onClick={() => fileInputRef.current?.click()} disabled={isUploading} style={{ width: '100%', marginBottom: '20px' }}>
+            {isUploading ? 'Uploading...' : 'Upload Media'}
+          </button>
 
-          <div style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '8px', overflow: 'hidden' }}>
-            <div style={{ padding: '8px 12px', fontSize: '0.8rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--glass-border)' }}>Live Preview</div>
-            <video 
-              key={Date.now()} // Force re-render if uploaded (simplified for this scope)
-              src={`/stream_video.mp4?v=${Date.now()}`} 
-              controls 
-              loop 
-              muted 
-              style={{ width: '100%', display: 'block', maxHeight: '180px', objectFit: 'cover' }} 
-            />
+          <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '15px' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Media Library</div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, maxHeight: '200px', overflowY: 'auto' }}>
+              {media.logo && (
+                <li style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#ffc107' }}>🖼️ logo.png (Brand)</span>
+                  <button style={{ background: 'none', border: 'none', color: '#f44336', cursor: 'pointer', fontSize: '1.2rem' }} onClick={() => handleDeleteMedia('logo', 'logo.png')}>&times;</button>
+                </li>
+              )}
+              {media.videos.map(v => (
+                <li key={v} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: '0.9rem' }}>🎥 {v}</span>
+                  <button style={{ background: 'none', border: 'none', color: '#f44336', cursor: 'pointer', fontSize: '1.2rem' }} onClick={() => handleDeleteMedia('video', v)}>&times;</button>
+                </li>
+              ))}
+              {media.audio.map(a => (
+                <li key={a} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#4caf50' }}>🎵 {a}</span>
+                  <button style={{ background: 'none', border: 'none', color: '#f44336', cursor: 'pointer', fontSize: '1.2rem' }} onClick={() => handleDeleteMedia('audio', a)}>&times;</button>
+                </li>
+              ))}
+              {media.videos.length === 0 && !media.logo && media.audio.length === 0 && (
+                <li style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Library kosong.</li>
+              )}
+            </ul>
           </div>
         </section>
       </main>

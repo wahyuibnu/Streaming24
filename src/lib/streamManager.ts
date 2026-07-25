@@ -203,6 +203,16 @@ export function stopStream(platform: Platform) {
   addLog(`[${platform}] Siaran dihentikan secara manual.`);
 }
 
+export function stopAllStreams() {
+  (['youtube', 'tiktok', 'twitch', 'kick'] as Platform[]).forEach(p => {
+    globalStore.intents[p] = 'offline';
+    if (globalStore.processes[p] && !globalStore.processes[p]?.killed) {
+      globalStore.processes[p]?.kill('SIGKILL');
+      addLog(`[${p}] Siaran dihentikan darurat (PANIC BUTTON).`);
+    }
+  });
+}
+
 export function getStreamStatus() {
   return {
     youtube: !!globalStore.processes.youtube && !globalStore.processes.youtube.killed,
