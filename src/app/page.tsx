@@ -122,7 +122,7 @@ export default function Dashboard() {
       )}
 
       {system && (
-        <section className={`glass-panel fade-in`} style={{ marginBottom: '30px', padding: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
+        <section className={`glass-panel fade-in`} style={{ marginBottom: '30px', padding: '20px', display: 'flex', flexWrap: 'wrap', gap: '30px', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>System Uptime</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{system.uptime}</div>
@@ -145,6 +145,34 @@ export default function Dashboard() {
             }}>
               Run Speedtest
             </button>
+          </div>
+          <div style={{ flexGrow: 1, minWidth: '300px' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Live Running Text (Marquee)</div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="Type here to update live stream text..." 
+                id="marqueeInput"
+                style={{ padding: '8px 12px' }}
+              />
+              <button className="btn btn-success" style={{ padding: '8px 16px' }} onClick={async () => {
+                const input = document.getElementById('marqueeInput') as HTMLInputElement;
+                if (!input) return;
+                setMessage('Updating running text...');
+                try {
+                  const res = await fetch('/api/marquee', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: input.value })
+                  });
+                  const data = await res.json();
+                  setMessage(data.message || 'Updated!');
+                } catch(e) {
+                  setMessage('Failed to update text');
+                }
+              }}>Update</button>
+            </div>
           </div>
         </section>
       )}

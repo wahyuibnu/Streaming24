@@ -14,7 +14,6 @@ const globalStore = global as unknown as {
 
 if (!globalStore.logs) globalStore.logs = [];
 
-// Zombie Process Prevention
 if (!globalStore.schedulerInitialzed) {
   const cleanup = () => {
     if (globalStore.youtubeProcess && !globalStore.youtubeProcess.killed) globalStore.youtubeProcess.kill('SIGKILL');
@@ -45,18 +44,30 @@ async function sendWebhook(message: string) {
   }
 }
 
-function generatePlaylist() {
-  const videosDir = path.join(process.cwd(), 'public', 'videos');
-  const playlistPath = path.join(videosDir, 'playlist.txt');
+function buildPlaylists() {
+  const publicDir = path.join(process.cwd(), 'public');
+  const videosDir = path.join(publicDir, 'videos');
+  const audioDir = path.join(publicDir, 'audio');
   
   if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
+  if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
   
-  const files = fs.readdirSync(videosDir).filter(f => f.endsWith('.mp4')).sort();
-  if (files.length === 0) throw new Error('No MP4 videos found in public/videos directory.');
+  const videoFiles = fs.readdirSync(videosDir).filter(f => f.endsWith('.mp4')).sort();
+  if (videoFiles.length === 0) throw new Error('Silakan unggah minimal 1 file MP4 terlebih dahulu.');
   
-  const playlistContent = files.map(f => `file '${f}'`).join('\n');
-  fs.writeFileSync(playlistPath, playlistContent);
-  return playlistPath;
+  const audioFiles = fs.readdirSync(audioDir).filter(f => f.endsWith('.mp3')).sort(() => Math.random() - 0.5); // Shuffle audio
+  
+  const videoPlaylistPath = path.join(publicDir, 'video_playlist.txt');
+  const audioPlaylistPath = path.join(publicDir, 'audio_playlist.txt');
+  
+  fs.writeFileSync(videoPlaylistPath, videoFiles.map(f => `file 'videos/${f}'`).join('\n'));
+  
+  const hasAudio = audioFiles.length > 0;
+  if (hasAudio) {
+    fs.writeFileSync(audioPlaylistPath, audioFiles.map(f => `file 'audio/${f}'`).join('\n'));
+  }
+  
+  return { videoPlaylistPath, audioPlaylistPath, hasAudio };
 }
 
 export function startStream(platform: 'youtube' | 'tiktok') {
@@ -73,25 +84,34 @@ function _spawnFFmpeg(platform: 'youtube' | 'tiktok') {
   const streamKey = platform === 'youtube' ? process.env.YOUTUBE_STREAM_KEY : process.env.TIKTOK_STREAM_KEY;
 
   if (!rtmpUrl || !streamKey || streamKey.includes('your_')) {
-    throw new Error(`Missing or invalid RTMP URL/Key for ${platform}`);
+    throw new Error(`Konfigurasi RTMP/Stream Key untuk ${platform} belum diatur di .env`);
   }
 
-  const playlistPath = generatePlaylist();
+  const { videoPlaylistPath, audioPlaylistPath, hasAudio } = buildPlaylists();
   const bitrate = process.env.STREAM_BITRATE || '3000k';
   const preset = process.env.STREAM_PRESET || 'veryfast';
   const resolution = process.env.STREAM_RESOLUTION || '1280x720';
 
   let ffmpegArgs = [
     '-re',
-    '-f', 'concat',
-    '-safe', '0',
-    '-stream_loop', '-1',
-    '-i', playlistPath
+    '-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', videoPlaylistPath
   ];
 
-  // Optional Watermark
+  if (hasAudio) {
+    ffmpegArgs.push('-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', audioPlaylistPath);
+  }
+
+  // Dynamic Marquee Text & Watermark (reload=1 allows live updating of public/marquee.txt)
+  const marqueePath = path.join(process.cwd(), 'public', 'marquee.txt');
+  let filterChain = `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile='${marqueePath}':reload=1:y=h-line_h-15:x=w-mod(t*150\\,w+tw):fontsize=28:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=10`;
+  
   if (process.env.ENABLE_WATERMARK === 'true') {
-    ffmpegArgs.push('-vf', "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5");
+    filterChain += `,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5`;
+  }
+  ffmpegArgs.push('-vf', filterChain);
+
+  if (hasAudio) {
+    ffmpegArgs.push('-map', '0:v:0', '-map', '1:a:0');
   }
 
   ffmpegArgs = ffmpegArgs.concat([
@@ -111,24 +131,24 @@ function _spawnFFmpeg(platform: 'youtube' | 'tiktok') {
     `${rtmpUrl}/${streamKey}`
   ]);
 
-  addLog(`[${platform}] Starting stream with Playlist, Bitrate: ${bitrate}, Res: ${resolution}`);
-  const ffmpeg = spawn('ffmpeg', ffmpegArgs, { cwd: path.join(process.cwd(), 'public', 'videos') });
+  addLog(`[${platform}] Memulai siaran (Audio Mix: ${hasAudio ? 'Aktif' : 'Nonaktif'})`);
+  const ffmpeg = spawn('ffmpeg', ffmpegArgs, { cwd: path.join(process.cwd(), 'public') });
 
   ffmpeg.stderr.on('data', (data) => {
     const output = data.toString();
     if (output.includes('frame=') || output.includes('bitrate=')) addLog(`[${platform}] ${output.trim()}`);
-    else if (output.toLowerCase().includes('error')) addLog(`[${platform}] ERROR: ${output.trim()}`);
+    else if (output.toLowerCase().includes('error')) addLog(`[${platform}] KESALAHAN: ${output.trim()}`);
   });
 
   ffmpeg.on('close', (code) => {
-    addLog(`[${platform}] Closed (code ${code})`);
+    addLog(`[${platform}] Siaran terputus (Kode ${code})`);
     if (platform === 'youtube') globalStore.youtubeProcess = undefined;
     if (platform === 'tiktok') globalStore.tiktokProcess = undefined;
 
     const intent = platform === 'youtube' ? globalStore.youtubeIntent : globalStore.tiktokIntent;
     if (intent === 'online') {
-      addLog(`[${platform}] Auto-restarting in 5s...`);
-      sendWebhook(`The ${platform} stream dropped and is attempting to auto-restart in 5 seconds.`);
+      addLog(`[${platform}] Mencoba menyambung kembali dalam 5 detik...`);
+      sendWebhook(`Koneksi ${platform} terputus. Sistem sedang mencoba menyambung ulang dalam 5 detik.`);
       setTimeout(() => {
         const currentIntent = platform === 'youtube' ? globalStore.youtubeIntent : globalStore.tiktokIntent;
         if (currentIntent === 'online') _spawnFFmpeg(platform);
@@ -144,9 +164,9 @@ export function stopStream(platform: 'youtube' | 'tiktok') {
   if (platform === 'youtube') globalStore.youtubeIntent = 'offline';
   if (platform === 'tiktok') globalStore.tiktokIntent = 'offline';
   const process = platform === 'youtube' ? globalStore.youtubeProcess : globalStore.tiktokProcess;
-  if (!process) throw new Error(`${platform} stream is not running`);
+  if (!process) throw new Error(`Siaran ${platform} saat ini sedang tidak berjalan`);
   process.kill('SIGINT');
-  addLog(`[${platform}] Stream stopped manually.`);
+  addLog(`[${platform}] Siaran dihentikan secara manual.`);
 }
 
 export function getStreamStatus() {
@@ -161,15 +181,15 @@ export function initScheduler() {
   if (globalStore.schedulerInitialzed) return;
   globalStore.schedulerInitialzed = true;
   cron.schedule('0 3 * * *', () => {
-    addLog('[System] Scheduler: Rest period');
+    addLog('[Sistem] Jadwal Aktif: Memasuki waktu istirahat');
     try { stopStream('youtube'); } catch(e){}
     try { stopStream('tiktok'); } catch(e){}
-    sendWebhook('Scheduled rest period started. Streams stopped.');
+    sendWebhook('Waktu istirahat terjadwal (03:00). Semua siaran dihentikan sementara.');
   });
   cron.schedule('0 7 * * *', () => {
-    addLog('[System] Scheduler: Waking up');
+    addLog('[Sistem] Jadwal Aktif: Membangunkan siaran');
     try { startStream('youtube'); } catch(e){}
     try { startStream('tiktok'); } catch(e){}
-    sendWebhook('Scheduled wake up. Streams started.');
+    sendWebhook('Sistem kembali aktif (07:00). Memulai ulang semua siaran.');
   });
 }
