@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const { action, platform } = await req.json();
 
-    if (!['start', 'stop'].includes(action) || !['youtube', 'tiktok'].includes(platform)) {
+    if (!['start', 'stop'].includes(action) || !['youtube', 'tiktok', 'twitch', 'kick'].includes(platform)) {
       return NextResponse.json({ error: 'Invalid action or platform' }, { status: 400 });
     }
 

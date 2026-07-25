@@ -4,8 +4,7 @@ import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
 export default function Dashboard() {
-  const [ytStatus, setYtStatus] = useState('offline');
-  const [tiktokStatus, setTiktokStatus] = useState('offline');
+  const [status, setStatus] = useState<Record<string, string>>({ youtube: 'offline', tiktok: 'offline', twitch: 'offline', kick: 'offline' });
   const [system, setSystem] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +20,7 @@ export default function Dashboard() {
     const interval = setInterval(() => {
       fetchStatus();
       fetchSystem();
-    }, 3000); // Polling faster for live logs
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -36,8 +35,12 @@ export default function Dashboard() {
       const res = await fetch('/api/stream/status');
       if (res.status === 401) return router.push('/login');
       const data = await res.json();
-      setYtStatus(data.youtube ? 'online' : 'offline');
-      setTiktokStatus(data.tiktok ? 'online' : 'offline');
+      setStatus({
+        youtube: data.youtube ? 'online' : 'offline',
+        tiktok: data.tiktok ? 'online' : 'offline',
+        twitch: data.twitch ? 'online' : 'offline',
+        kick: data.kick ? 'online' : 'offline',
+      });
       if (data.logs) setLogs(data.logs);
     } catch (err) {}
   };
@@ -178,53 +181,34 @@ export default function Dashboard() {
       )}
 
       <main className={styles.dashboardGrid}>
-        <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.1s' }}>
-          <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>YouTube Live</div>
-            <span className={`${styles.statusBadge} ${ytStatus === 'online' ? styles.statusOnline : styles.statusOffline}`}>
-              {ytStatus}
-            </span>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Broadcasting via RTMP. Reads advanced settings from .env and loops playlist.
-          </p>
-          <div className={styles.actions}>
-            {ytStatus === 'offline' ? (
-              <button className="btn btn-success" disabled={isLoading} onClick={() => handleStreamAction('youtube', 'start')}>
-                Start Stream
-              </button>
-            ) : (
-              <button className="btn btn-danger" disabled={isLoading} onClick={() => handleStreamAction('youtube', 'stop')}>
-                Stop Stream
-              </button>
-            )}
-          </div>
-        </section>
+        {['youtube', 'tiktok', 'twitch', 'kick'].map((platform, idx) => (
+          <section key={platform} className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: `${0.1 * (idx + 1)}s` }}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardTitle} style={{ textTransform: 'capitalize' }}>
+                {platform} Live
+              </div>
+              <span className={`${styles.statusBadge} ${status[platform] === 'online' ? styles.statusOnline : styles.statusOffline}`}>
+                {status[platform]}
+              </span>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+              Broadcasting via RTMP. Hardware Encoding and Auto-Archive available based on .env config.
+            </p>
+            <div className={styles.actions}>
+              {status[platform] === 'offline' ? (
+                <button className="btn btn-success" disabled={isLoading} onClick={() => handleStreamAction(platform, 'start')}>
+                  Start Stream
+                </button>
+              ) : (
+                <button className="btn btn-danger" disabled={isLoading} onClick={() => handleStreamAction(platform, 'stop')}>
+                  Stop Stream
+                </button>
+              )}
+            </div>
+          </section>
+        ))}
 
-        <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.2s' }}>
-          <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>TikTok Live</div>
-            <span className={`${styles.statusBadge} ${tiktokStatus === 'online' ? styles.statusOnline : styles.statusOffline}`}>
-              {tiktokStatus}
-            </span>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Custom RTMP connection with auto-reconnect capability.
-          </p>
-          <div className={styles.actions}>
-            {tiktokStatus === 'offline' ? (
-              <button className="btn btn-success" disabled={isLoading} onClick={() => handleStreamAction('tiktok', 'start')}>
-                Start Stream
-              </button>
-            ) : (
-              <button className="btn btn-danger" disabled={isLoading} onClick={() => handleStreamAction('tiktok', 'stop')}>
-                Stop Stream
-              </button>
-            )}
-          </div>
-        </section>
-
-        <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.3s' }}>
+        <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.5s' }}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>Media Source</div>
           </div>
