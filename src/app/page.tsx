@@ -187,7 +187,7 @@ export default function Dashboard() {
 
         <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.3s' }}>
           <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>Media Upload</div>
+            <div className={styles.cardTitle}>Media Source</div>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
             Upload a new MP4 file directly from your browser.
@@ -199,7 +199,7 @@ export default function Dashboard() {
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
-          <div className={styles.uploadArea} onClick={() => !isUploading && fileInputRef.current?.click()}>
+          <div className={styles.uploadArea} onClick={() => !isUploading && fileInputRef.current?.click()} style={{ marginBottom: '15px' }}>
             <div style={{ marginBottom: '15px' }}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -210,6 +210,18 @@ export default function Dashboard() {
             <h4 style={{ marginBottom: '6px', fontWeight: 500 }}>
               {isUploading ? 'Uploading...' : 'Click to Upload MP4'}
             </h4>
+          </div>
+
+          <div style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '8px', overflow: 'hidden' }}>
+            <div style={{ padding: '8px 12px', fontSize: '0.8rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--glass-border)' }}>Live Preview</div>
+            <video 
+              key={Date.now()} // Force re-render if uploaded (simplified for this scope)
+              src={`/stream_video.mp4?v=${Date.now()}`} 
+              controls 
+              loop 
+              muted 
+              style={{ width: '100%', display: 'block', maxHeight: '180px', objectFit: 'cover' }} 
+            />
           </div>
         </section>
       </main>
