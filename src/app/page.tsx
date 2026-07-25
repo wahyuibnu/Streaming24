@@ -194,7 +194,7 @@ export default function Dashboard() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             STOP ALL
           </button>
-          <button className="btn" onClick={() => setShowSettings(true)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className="btn" onClick={() => setShowSettings(true)} style={{ background: 'var(--accent)', border: '1px solid var(--border)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Settings
           </button>
@@ -202,7 +202,7 @@ export default function Dashboard() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Export Backup
           </button>
-          <button className="btn" onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)' }}>
+          <button className="btn" onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             Logout
           </button>
@@ -258,7 +258,7 @@ export default function Dashboard() {
       )}
 
       {message && (
-        <div style={{ padding: '12px 16px', background: 'var(--glass-bg)', borderLeft: '4px solid var(--primary)', marginBottom: '24px', borderRadius: '6px', fontSize: '0.95rem' }}>
+        <div style={{ padding: '12px 16px', background: 'var(--accent)', borderLeft: '4px solid var(--primary)', marginBottom: '24px', borderRadius: '6px', fontSize: '0.95rem' }}>
           {message}
         </div>
       )}
@@ -266,15 +266,15 @@ export default function Dashboard() {
       {system && (
         <section className={`glass-panel fade-in`} style={{ marginBottom: '30px', padding: '20px', display: 'flex', flexWrap: 'wrap', gap: '30px', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>System Uptime</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>System Uptime</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{system.uptime}</div>
           </div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Memory Usage</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Memory Usage</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{system.memory.used} GB / {system.memory.total} GB ({system.memory.percent}%)</div>
           </div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Network Diagnostic</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Network Diagnostic</div>
             <button className="btn" style={{ padding: '6px 12px', fontSize: '0.85rem', marginTop: '4px', background: 'var(--primary)' }} onClick={async () => {
               setMessage('Testing network latency to ingest servers...');
               try {
@@ -289,7 +289,7 @@ export default function Dashboard() {
             </button>
           </div>
           <div style={{ flexGrow: 1, minWidth: '300px' }}>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Live Running Text (Marquee)</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Live Running Text (Marquee)</div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <input 
                 type="text" 
@@ -330,7 +330,7 @@ export default function Dashboard() {
                 {status[platform]}
               </span>
             </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
               Broadcasting via RTMP. Hardware Encoding and Auto-Archive available based on .env config.
             </p>
             <div className={styles.actions}>
@@ -351,7 +351,7 @@ export default function Dashboard() {
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>Media Source</div>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '15px' }}>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '15px' }}>
             Upload <strong>.mp4</strong> videos to add to the playlist, or upload a <strong>.png</strong> file to set your Brand Logo Watermark!
           </p>
           <input 
@@ -366,8 +366,8 @@ export default function Dashboard() {
             {isUploading ? 'Uploading...' : 'Upload Media'}
           </button>
 
-          <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '15px' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Media Library</div>
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Media Library</div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, maxHeight: '200px', overflowY: 'auto' }}>
               {media.logo && (
                 <li style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -397,7 +397,7 @@ export default function Dashboard() {
                 </li>
               ))}
               {media.videos.length === 0 && !media.logo && media.audio.length === 0 && (
-                <li style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Library kosong.</li>
+                <li style={{ fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic' }}>Library kosong.</li>
               )}
             </ul>
           </div>
@@ -405,9 +405,9 @@ export default function Dashboard() {
       </main>
 
       <section className={`glass-panel fade-in`} style={{ marginTop: '30px', animationDelay: '0.4s' }}>
-        <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>Terminal Logs (Real-time)</div>
-          <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem' }} onClick={() => setLogs([])}>
+          <button style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem' }} onClick={() => setLogs([])}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             Clear Logs
           </button>
@@ -427,7 +427,7 @@ export default function Dashboard() {
           }}
         >
           {logs.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)' }}>Waiting for stream data...</div>
+            <div style={{ color: 'var(--muted)' }}>Waiting for stream data...</div>
           ) : (
             logs.map((log, i) => (
               <div key={i} style={{ marginBottom: '4px' }}>{log}</div>
