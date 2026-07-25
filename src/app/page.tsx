@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
@@ -7,9 +7,13 @@ export default function Dashboard() {
   const [ytStatus, setYtStatus] = useState('offline');
   const [tiktokStatus, setTiktokStatus] = useState('offline');
   const [system, setSystem] = useState<any>(null);
+  const [logs, setLogs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logsEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchStatus();
@@ -17,29 +21,31 @@ export default function Dashboard() {
     const interval = setInterval(() => {
       fetchStatus();
       fetchSystem();
-    }, 5000);
+    }, 3000); // Polling faster for live logs
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (logsEndRef.current) {
+      logsEndRef.current.scrollTop = logsEndRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   const fetchStatus = async () => {
     try {
       const res = await fetch('/api/stream/status');
-      if (res.status === 401) router.push('/login');
+      if (res.status === 401) return router.push('/login');
       const data = await res.json();
       setYtStatus(data.youtube ? 'online' : 'offline');
       setTiktokStatus(data.tiktok ? 'online' : 'offline');
-    } catch (err) {
-      console.error('Failed to fetch status');
-    }
+      if (data.logs) setLogs(data.logs);
+    } catch (err) {}
   };
 
   const fetchSystem = async () => {
     try {
       const res = await fetch('/api/system');
-      if (res.ok) {
-        const data = await res.json();
-        setSystem(data);
-      }
+      if (res.ok) setSystem(await res.json());
     } catch (err) {}
   };
 
@@ -58,15 +64,44 @@ export default function Dashboard() {
         body: JSON.stringify({ platform, action })
       });
       const data = await res.json();
-      
-      if (!res.ok) throw new Error(data.error || 'Something went wrong');
-      
+      if (!res.ok) throw new Error(data.error);
       setMessage(data.message);
       await fetchStatus();
     } catch (err: any) {
       setMessage(`Error: ${err.message}`);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.mp4')) {
+      return setMessage('Error: Only MP4 files are allowed.');
+    }
+
+    setIsUploading(true);
+    setMessage('Uploading video, please wait...');
+
+    const formData = new FormData();
+    formData.append('video', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      setMessage(data.message);
+    } catch (err: any) {
+      setMessage(`Upload Error: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -86,7 +121,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* System Metrics Panel */}
       {system && (
         <section className={`glass-panel fade-in`} style={{ marginBottom: '30px', padding: '20px', display: 'flex', gap: '40px', alignItems: 'center' }}>
           <div>
@@ -105,122 +139,108 @@ export default function Dashboard() {
       )}
 
       <main className={styles.dashboardGrid}>
-        
-        {/* YouTube Card */}
         <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.1s' }}>
           <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#ef4444">
-                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path>
-                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#fff"></polygon>
-              </svg>
-              YouTube Live
-            </div>
+            <div className={styles.cardTitle}>YouTube Live</div>
             <span className={`${styles.statusBadge} ${ytStatus === 'online' ? styles.statusOnline : styles.statusOffline}`}>
               {ytStatus}
             </span>
           </div>
-
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Broadcasting via RTMP. The stream runs on an infinite loop directly from the server.
+            Broadcasting via RTMP with live clock watermark overlay.
           </p>
-
           <div className={styles.actions}>
             {ytStatus === 'offline' ? (
-              <button 
-                className="btn btn-success" 
-                disabled={isLoading}
-                onClick={() => handleStreamAction('youtube', 'start')}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <button className="btn btn-success" disabled={isLoading} onClick={() => handleStreamAction('youtube', 'start')}>
                 Start Stream
               </button>
             ) : (
-              <button 
-                className="btn btn-danger" 
-                disabled={isLoading}
-                onClick={() => handleStreamAction('youtube', 'stop')}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+              <button className="btn btn-danger" disabled={isLoading} onClick={() => handleStreamAction('youtube', 'stop')}>
                 Stop Stream
               </button>
             )}
           </div>
         </section>
 
-        {/* TikTok Card */}
         <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.2s' }}>
           <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
-              </svg>
-              TikTok Live
-            </div>
+            <div className={styles.cardTitle}>TikTok Live</div>
             <span className={`${styles.statusBadge} ${tiktokStatus === 'online' ? styles.statusOnline : styles.statusOffline}`}>
               {tiktokStatus}
             </span>
           </div>
-
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Broadcasting via Custom RTMP. Connection stays alive automatically.
+            Custom RTMP connection with auto-reconnect capability.
           </p>
-
           <div className={styles.actions}>
             {tiktokStatus === 'offline' ? (
-              <button 
-                className="btn btn-success" 
-                disabled={isLoading}
-                onClick={() => handleStreamAction('tiktok', 'start')}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <button className="btn btn-success" disabled={isLoading} onClick={() => handleStreamAction('tiktok', 'start')}>
                 Start Stream
               </button>
             ) : (
-              <button 
-                className="btn btn-danger" 
-                disabled={isLoading}
-                onClick={() => handleStreamAction('tiktok', 'stop')}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+              <button className="btn btn-danger" disabled={isLoading} onClick={() => handleStreamAction('tiktok', 'stop')}>
                 Stop Stream
               </button>
             )}
           </div>
         </section>
 
-        {/* Media Manager Card */}
         <section className={`glass-panel ${styles.card} fade-in`} style={{ animationDelay: '0.3s' }}>
           <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <div className={styles.cardTitle}>Media Upload</div>
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            Upload a new MP4 file directly from your browser.
+          </p>
+          <input 
+            type="file" 
+            accept="video/mp4" 
+            style={{ display: 'none' }} 
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+          />
+          <div className={styles.uploadArea} onClick={() => !isUploading && fileInputRef.current?.click()}>
+            <div style={{ marginBottom: '15px' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-              Media Source
             </div>
-          </div>
-          
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            Current target file path is securely mapped in your environment configuration.
-          </p>
-
-          <div className={styles.uploadArea}>
-            <div style={{ marginBottom: '15px' }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="12" y1="18" x2="12" y2="12"></line>
-                <line x1="9" y1="15" x2="15" y2="15"></line>
-              </svg>
-            </div>
-            <h4 style={{ marginBottom: '6px', fontWeight: 500 }}>stream_video.mp4</h4>
-            <p style={{ color: 'var(--success)', fontSize: '0.85rem' }}>Source Validated</p>
+            <h4 style={{ marginBottom: '6px', fontWeight: 500 }}>
+              {isUploading ? 'Uploading...' : 'Click to Upload MP4'}
+            </h4>
           </div>
         </section>
-
       </main>
+
+      <section className={`glass-panel fade-in`} style={{ marginTop: '30px', animationDelay: '0.4s' }}>
+        <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--glass-border)', fontSize: '1.1rem', fontWeight: 600 }}>
+          Terminal Logs (Real-time)
+        </div>
+        <div 
+          ref={logsEndRef}
+          style={{ 
+            height: '200px', 
+            overflowY: 'auto', 
+            padding: '20px', 
+            fontFamily: 'monospace', 
+            fontSize: '0.85rem',
+            color: '#a3e635',
+            background: 'rgba(0,0,0,0.3)',
+            display: 'flex',
+            flexDirection: 'column-reverse'
+          }}
+        >
+          {logs.length === 0 ? (
+            <div style={{ color: 'var(--text-muted)' }}>Waiting for stream data...</div>
+          ) : (
+            logs.map((log, i) => (
+              <div key={i} style={{ marginBottom: '4px' }}>{log}</div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }

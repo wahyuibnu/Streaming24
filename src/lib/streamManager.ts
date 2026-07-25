@@ -1,22 +1,33 @@
 import { spawn, ChildProcess } from 'child_process';
+import cron from 'node-cron';
 
-const globalProcessStore = global as unknown as {
+const globalStore = global as unknown as {
   youtubeProcess?: ChildProcess;
   tiktokProcess?: ChildProcess;
   youtubeIntent?: 'online' | 'offline';
   tiktokIntent?: 'online' | 'offline';
+  logs: string[];
+  schedulerInitialzed?: boolean;
 };
 
+if (!globalStore.logs) globalStore.logs = [];
+
+function addLog(msg: string) {
+  const time = new Date().toISOString().split('T')[1].split('.')[0];
+  globalStore.logs.unshift(`[${time}] ${msg}`);
+  if (globalStore.logs.length > 50) globalStore.logs.pop(); // Keep last 50 lines
+}
+
 export function startStream(platform: 'youtube' | 'tiktok') {
-  if (platform === 'youtube') globalProcessStore.youtubeIntent = 'online';
-  if (platform === 'tiktok') globalProcessStore.tiktokIntent = 'online';
+  if (platform === 'youtube') globalStore.youtubeIntent = 'online';
+  if (platform === 'tiktok') globalStore.tiktokIntent = 'online';
 
   _spawnFFmpeg(platform);
 }
 
 function _spawnFFmpeg(platform: 'youtube' | 'tiktok') {
-  if (platform === 'youtube' && globalProcessStore.youtubeProcess) return;
-  if (platform === 'tiktok' && globalProcessStore.tiktokProcess) return;
+  if (platform === 'youtube' && globalStore.youtubeProcess) return;
+  if (platform === 'tiktok' && globalStore.tiktokProcess) return;
 
   const rtmpUrl = platform === 'youtube' ? process.env.YOUTUBE_RTMP_URL : process.env.TIKTOK_RTMP_URL;
   const streamKey = platform === 'youtube' ? process.env.YOUTUBE_STREAM_KEY : process.env.TIKTOK_STREAM_KEY;
@@ -28,10 +39,12 @@ function _spawnFFmpeg(platform: 'youtube' | 'tiktok') {
 
   const fullUrl = `${rtmpUrl}/${streamKey}`;
 
+  // FFmpeg arguments for infinite loop 24/7 streaming WITH live clock overlay to prevent spam detection
   const ffmpegArgs = [
     '-re',
     '-stream_loop', '-1',
     '-i', videoPath,
+    '-vf', "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime}':x=w-tw-20:y=20:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.4:boxborderw=5",
     '-c:v', 'libx264',
     '-preset', 'veryfast',
     '-b:v', '3000k',
@@ -47,20 +60,30 @@ function _spawnFFmpeg(platform: 'youtube' | 'tiktok') {
     fullUrl
   ];
 
-  console.log(`[${platform}] Starting FFmpeg...`);
+  addLog(`[${platform}] Starting stream...`);
   const ffmpeg = spawn('ffmpeg', ffmpegArgs);
 
-  ffmpeg.on('close', (code) => {
-    console.log(`[${platform}] FFmpeg process exited with code ${code}`);
-    
-    if (platform === 'youtube') globalProcessStore.youtubeProcess = undefined;
-    if (platform === 'tiktok') globalProcessStore.tiktokProcess = undefined;
+  ffmpeg.stderr.on('data', (data) => {
+    const output = data.toString();
+    // Only log actual metrics to avoid spamming the log view with junk
+    if (output.includes('frame=') || output.includes('bitrate=')) {
+      addLog(`[${platform}] ${output.trim()}`);
+    } else if (output.includes('error') || output.includes('Error')) {
+      addLog(`[${platform}] ERROR: ${output.trim()}`);
+    }
+  });
 
-    const intent = platform === 'youtube' ? globalProcessStore.youtubeIntent : globalProcessStore.tiktokIntent;
+  ffmpeg.on('close', (code) => {
+    addLog(`[${platform}] Connection closed (code ${code})`);
+    
+    if (platform === 'youtube') globalStore.youtubeProcess = undefined;
+    if (platform === 'tiktok') globalStore.tiktokProcess = undefined;
+
+    const intent = platform === 'youtube' ? globalStore.youtubeIntent : globalStore.tiktokIntent;
     if (intent === 'online') {
-      console.log(`[${platform}] Stream closed unexpectedly. Auto-restarting in 5 seconds...`);
+      addLog(`[${platform}] Auto-restarting in 5 seconds...`);
       setTimeout(() => {
-        const currentIntent = platform === 'youtube' ? globalProcessStore.youtubeIntent : globalProcessStore.tiktokIntent;
+        const currentIntent = platform === 'youtube' ? globalStore.youtubeIntent : globalStore.tiktokIntent;
         if (currentIntent === 'online') {
            _spawnFFmpeg(platform);
         }
@@ -68,26 +91,50 @@ function _spawnFFmpeg(platform: 'youtube' | 'tiktok') {
     }
   });
 
-  if (platform === 'youtube') globalProcessStore.youtubeProcess = ffmpeg;
-  if (platform === 'tiktok') globalProcessStore.tiktokProcess = ffmpeg;
+  if (platform === 'youtube') globalStore.youtubeProcess = ffmpeg;
+  if (platform === 'tiktok') globalStore.tiktokProcess = ffmpeg;
 }
 
 export function stopStream(platform: 'youtube' | 'tiktok') {
-  if (platform === 'youtube') globalProcessStore.youtubeIntent = 'offline';
-  if (platform === 'tiktok') globalProcessStore.tiktokIntent = 'offline';
+  if (platform === 'youtube') globalStore.youtubeIntent = 'offline';
+  if (platform === 'tiktok') globalStore.tiktokIntent = 'offline';
 
-  const process = platform === 'youtube' ? globalProcessStore.youtubeProcess : globalProcessStore.tiktokProcess;
+  const process = platform === 'youtube' ? globalStore.youtubeProcess : globalStore.tiktokProcess;
   
   if (!process) {
     throw new Error(`${platform} stream is not running`);
   }
 
   process.kill('SIGINT');
+  addLog(`[${platform}] Stream stopped manually.`);
 }
 
 export function getStreamStatus() {
   return {
-    youtube: !!globalProcessStore.youtubeProcess && !globalProcessStore.youtubeProcess.killed,
-    tiktok: !!globalProcessStore.tiktokProcess && !globalProcessStore.tiktokProcess.killed,
+    youtube: !!globalStore.youtubeProcess && !globalStore.youtubeProcess.killed,
+    tiktok: !!globalStore.tiktokProcess && !globalStore.tiktokProcess.killed,
+    logs: globalStore.logs
   };
+}
+
+// Scheduler Setup
+export function initScheduler() {
+  if (globalStore.schedulerInitialzed) return;
+  globalStore.schedulerInitialzed = true;
+
+  // Example: Stop at 03:00 AM, Start at 07:00 AM everyday
+  // This can be configurable via API or DB in the future
+  cron.schedule('0 3 * * *', () => {
+    addLog('[System] Scheduler triggered: Stopping streams for rest period');
+    try { stopStream('youtube'); } catch(e){}
+    try { stopStream('tiktok'); } catch(e){}
+  });
+
+  cron.schedule('0 7 * * *', () => {
+    addLog('[System] Scheduler triggered: Waking up streams');
+    try { startStream('youtube'); } catch(e){}
+    try { startStream('tiktok'); } catch(e){}
+  });
+
+  addLog('[System] Daily Scheduler active: Rest at 03:00, Wake at 07:00');
 }

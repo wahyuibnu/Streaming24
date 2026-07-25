@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "next": "16.2.11",
+    "node-cron": "^4.6.0",
     "pm2": "^7.0.3",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
