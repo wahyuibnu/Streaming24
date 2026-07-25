@@ -145,20 +145,23 @@ function _spawnFFmpeg(platform: Platform) {
   // Anti-Banned Pixel Randomization
   vfFilters += `,noise=c0s=2:allf=t`;
 
-  if (hasComplex) {
-    filterChain += `${currentVideo}${vfFilters}[vout]`;
-    ffmpegArgs.push('-filter_complex', filterChain);
-    ffmpegArgs.push('-map', '[vout]');
-  } else {
-    ffmpegArgs.push('-vf', vfFilters);
-    ffmpegArgs.push('-map', '0:v:0');
-  }
+  // 4. Audio Spoofing (Inaudible White Noise & Loudnorm)
+  const aIdx = hasAudio ? '1:a:0' : '0:a:0';
+  const audioFilters = `anoisesrc=a=0.0005:c=pink[anoise];[${aIdx}][anoise]amix=inputs=2:duration=first[amixed];[amixed]loudnorm=I=-16:TP=-1.5:LRA=11[aout]`;
 
-  if (hasAudio) ffmpegArgs.push('-map', '1:a:0'); // map audio from 2nd input
-  else ffmpegArgs.push('-map', '0:a:0'); // map audio from 1st input
+  // Combine video and audio filters into a single filter_complex
+  const videoFilterPart = `${currentVideo}${vfFilters}[vout]`;
+  const finalFilterChain = [filterChain, videoFilterPart, audioFilters].filter(Boolean).join(';').replace(/;;/g, ';');
 
-  // Multi-output setup using pseudo-muxer if Archive is enabled
-  // We apply the encoding args before specifying outputs
+  ffmpegArgs.push('-filter_complex', finalFilterChain);
+  ffmpegArgs.push('-map', '[vout]');
+  ffmpegArgs.push('-map', '[aout]');
+
+  // ==== OUTPUT ENCODING SETTINGS ====
+  // OBS Studio Signature Spoofing (Anti-Bot Detection)
+  ffmpegArgs.push('-rtmp_flashver', 'FMLE/3.0 (compatible; FMSc/1.0)'); // Mimic OBS/FMLE signature
+  ffmpegArgs.push('-rtmp_app', 'live2');
+
   ffmpegArgs = ffmpegArgs.concat([
     '-c:v', hwEncoder,
     '-preset', preset,
