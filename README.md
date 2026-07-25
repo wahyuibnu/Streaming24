@@ -1,6 +1,7 @@
 # StreamAuto 24/7
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
+![Status](https://img.shields.io/badge/Status-Beta-orange.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-14.x-black.svg)
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-4.4%2B-red.svg)
