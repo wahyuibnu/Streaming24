@@ -1,78 +1,87 @@
-# StreamAuto 24/7
+<div align="center">
+  <h1>🚀 StreamAuto 24/7</h1>
+  <p><strong>Platform Live Streaming Otomatis Kelas Enterprise untuk Kreator Konten</strong></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-14+-black?style=flat-square&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/FFmpeg-Ready-blue?style=flat-square&logo=ffmpeg" alt="FFmpeg" />
+    <img src="https://img.shields.io/badge/Node.js-18+-green?style=flat-square&logo=node.js" alt="Node.js" />
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License" />
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome" />
+  </p>
+</div>
 
-StreamAuto 24/7 is a robust, lightweight SaaS-style dashboard built with Next.js and FFmpeg that allows you to stream a single video file on an infinite loop to YouTube and TikTok simultaneously, 24 hours a day, 7 days a week.
+---
 
-## 🌟 Features
-- **Simultaneous Streaming:** Push live streams to both YouTube and TikTok concurrently.
-- **24/7 Infinite Loop:** Automatically loops your selected MP4 video indefinitely using FFmpeg.
-- **Secure Credentials:** All Stream Keys and URLs are stored safely in `.env` and are never exposed to the frontend.
-- **Glassmorphism UI:** A premium, modern, and dark-themed dashboard to monitor your streams.
-- **API Controlled:** Streams are managed via Next.js background workers and child processes.
+Bosan komputer Anda harus menyala seharian penuh hanya untuk menjaga siaran *live* tetap berjalan? 
 
-## 🚀 Prerequisites
-- Node.js (v18 or newer)
-- FFmpeg installed on your server (`sudo apt install ffmpeg`)
-- A Linux VPS or local server to keep the streams running 24/7.
+**StreamAuto 24/7** adalah solusi *dashboard* mandiri bergaya SaaS yang dirancang khusus untuk memutar video Anda secara terus-menerus ke berbagai platform sekaligus (YouTube, TikTok, Twitch, & Kick). Dibangun dengan perpaduan teknologi canggih antara keindahan Next.js dan ketangguhan mesin FFmpeg di *backend*, proyek ini mengubah VPS sederhana Anda menjadi stasiun TV pribadi yang tidak pernah tidur.
 
-## 📦 Installation & Setup
+## ✨ Fitur Unggulan
 
-1. **Clone the repository:**
+- **📡 Multicast Matrix (4 Platform)**: Siarkan konten Anda secara bersamaan ke YouTube, TikTok, Twitch, dan Kick langsung dari satu *dashboard*.
+- **🎵 Lofi Radio Mode (Audio Shuffle)**: Unggah deretan lagu MP3 favorit Anda. Sistem akan otomatis menyatukan (Muxing) visual video utama Anda dengan playlist musik yang diacak—sempurna untuk *channel* gaya "Lofi Hip-Hop 24/7".
+- **💬 Live Marquee (Teks Berjalan)**: Ingin menyapa donatur atau memberi pengumuman *live*? Ubah teks berjalan (Running Text) langsung dari *dashboard* dan video Anda akan ter- *update* seketika tanpa perlu menghentikan siaran.
+- **🛡️ Sistem Keamanan Berlapis (Brute-Force Protection)**: Panel admin diamankan dengan autentikasi berbasis sesi (*cookie*) serta pelacakan *lockout* otomatis jika ada percobaan *login* paksa oleh *hacker*.
+- **🚀 Eksekusi GPU (Hardware Acceleration)**: Jika server Anda dilengkapi GPU, sistem bisa diatur untuk menggunakan NVENC (Nvidia) atau QSV (Intel) agar performa CPU tetap sangat rendah (0-5%).
+- **🔴 VOD Archiving Otomatis**: Rekam siaran Anda secara paralel (*Tee Muxing*) langsung ke dalam hardisk server tanpa membebani prosesor sama sekali.
+- **🤖 Penjaga Siaran (Anti-Zombie & Auto-Restart)**: Jika koneksi internet putus, sistem akan otomatis melakukan *restart* dalam 5 detik. Tidak hanya itu, aplikasi akan otomatis mematikan *Zombie Process* FFmpeg untuk mencegah memori server Anda bocor.
+
+## 📦 Persyaratan Sistem
+
+- **Node.js** (versi 18 ke atas)
+- **FFmpeg** (Wajib terinstal di OS Anda: `sudo apt install ffmpeg`)
+- **Fonts Dejavu** (Untuk teks berjalan: `sudo apt install fonts-dejavu-core`)
+- Disarankan menggunakan sistem berbasis Linux (Ubuntu/Debian) untuk performa 24/7 terbaik.
+
+## 🚀 Instalasi & Cara Penggunaan
+
+1. **Unduh Repositori**
    ```bash
-   git clone https://github.com/yourusername/StreamAuto247.git
-   cd StreamAuto247
+   git clone https://github.com/wahyuibnu/Streaming24.git
+   cd Streaming24
    ```
 
-2. **Install Dependencies:**
+2. **Instal Dependensi**
    ```bash
    npm install
    ```
 
-3. **Configure Environment Variables:**
-   Copy the example environment file:
+3. **Konfigurasi Environment**
+   Ganti nama `.env.example` menjadi `.env` lalu sesuaikan dengan kunci rahasia Anda.
    ```bash
    cp .env.example .env
    ```
-   Open `.env` and fill in your details:
-   - `PORT`: The port for the web dashboard (default: 8080)
-   - `YOUTUBE_STREAM_KEY`: Your YouTube Live stream key
-   - `TIKTOK_STREAM_KEY`: Your TikTok Live stream key
-   - `TIKTOK_RTMP_URL`: Your TikTok Server URL (e.g., rtmp://...)
-   - `VIDEO_FILE_PATH`: The absolute or relative path to the MP4 file you want to stream (e.g., `./public/stream_video.mp4`).
+   > 💡 **Penting:** Pastikan Anda mengubah `ADMIN_PASSWORD` di dalam `.env` untuk melindungi *dashboard* Anda dari jangkauan publik.
 
-4. **Add Your Video:**
-   Place the MP4 file you want to loop in the `public/` directory and name it `stream_video.mp4`, or update the path in `.env`.
+4. **Unggah Media Anda**
+   - Video utama bisa diunggah langsung melalui *Dashboard* Web nanti.
+   - Atau, masukkan file video berformat `.mp4` ke dalam folder `public/videos/`.
+   - (Opsional) Masukkan file `.mp3` ke folder `public/audio/` untuk mengaktifkan mode *Radio Lofi*.
 
-5. **Start the Dashboard:**
-   To run in development mode:
+5. **Jalankan Aplikasi**
+   Untuk tahap uji coba:
    ```bash
    npm run dev
    ```
-   To run in production (Recommended for 24/7 stability):
+   Untuk disebarkan di *Production* (Disarankan menggunakan PM2):
    ```bash
-   # 1. Install PM2 globally
    sudo npm install -g pm2
-   
-   # 2. Build the Next.js app
    npm run build
-   
-   # 3. Start the application using the ecosystem file
    pm2 start ecosystem.config.js
-   
-   # 4. Save PM2 state so it restarts on server reboot
    pm2 save
-   pm2 startup
    ```
 
-## 🛡 Reliability (Auto-Restart)
-- **FFmpeg Auto-Restart:** If the stream drops due to a network hiccup or TikTok/YouTube closing the connection, the internal `streamManager` will automatically restart FFmpeg after 5 seconds to keep the 24/7 loop alive.
-- **App Auto-Restart:** PM2 ensures that the web dashboard itself is always running, even if the VPS restarts.
+6. Buka `http://<IP-Server-Anda>:8080` di browser dan masuk menggunakan *password* yang telah Anda buat.
 
-## 🛠 Usage
-1. Open your browser and navigate to `http://<your-server-ip>:8080`.
-2. You will see the StreamAuto dashboard.
-3. Click **Start Stream** on the YouTube or TikTok cards.
-4. The dashboard will communicate with the backend API to spawn an FFmpeg process that pushes your video to the respective RTMP servers.
-5. Click **Stop Stream** to kill the background FFmpeg process gracefully.
+## 🛠️ Modifikasi Tingkat Lanjut (Advanced Config)
 
-## 📄 License
-MIT License
+Buka file `.env` untuk melakukan kustomisasi FFmpeg kelas profesional:
+- `STREAM_BITRATE`: Atur kualitas *bitrate* (Misal: `3000k` atau `6000k`)
+- `HARDWARE_ENCODER`: Ganti dari `libx264` ke `h264_nvenc` jika Anda menyewa server ber-GPU.
+- `ENABLE_ARCHIVE`: Ubah ke `true` jika Anda ingin siaran Anda direkam secara otomatis dalam potongan-potongan MP4 beresolusi tinggi.
+- `DISCORD_WEBHOOK_URL`: Pasang *link* Discord Anda untuk mendapatkan notifikasi *real-time* ke HP jika siaran Anda terputus.
+
+## 📄 Lisensi
+
+Proyek ini didistribusikan di bawah lisensi MIT. Anda dibebaskan untuk memodifikasi, menggunakan untuk komersial, maupun membagikan kembali kode sumber ini. Selamat berkarya!
