@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
 import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
@@ -17,10 +17,18 @@ if (!globalStore.intents) globalStore.intents = { youtube: 'offline', tiktok: 'o
 if (!globalStore.logs) globalStore.logs = [];
 
 if (!globalStore.schedulerInitialzed) {
+  // Zombie Process Annihilation (Fail-Safe 100%)
+  try {
+    execSync('pkill -f ffmpeg');
+    console.log('[Sistem] Membersihkan zombie process FFmpeg lama...');
+  } catch (e) {}
+
   const cleanup = () => {
     Object.values(globalStore.processes).forEach(p => {
       if (p && !p.killed) p.kill('SIGKILL');
     });
+    try { execSync('pkill -f ffmpeg'); } catch (e) {}
+    process.exit(0);
   };
   process.on('exit', cleanup);
   process.on('SIGINT', cleanup);
