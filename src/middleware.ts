@@ -28,5 +28,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/api/stream/:path*'],
+  matcher: ['/', '/api/:path*'],
 };
